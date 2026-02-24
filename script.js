@@ -1,11 +1,9 @@
 const TAXA_FIXA_MENSAL = 59.90;
 
-// Simulação de banco de dados
+// Seus clientes reais conforme os links passados
 const parceiros = [
-    { id: 1, nome: "Snoop Lanches", vendas: 4500.00, status: "Ativo" },
-    { id: 2, nome: "Pizzaria do Bairro", vendas: 2800.00, status: "Pendente" },
-    { id: 3, nome: "Burguer King Local", vendas: 7200.00, status: "Ativo" },
-    { id: 4, nome: "Açaí do Porto", vendas: 950.00, status: "Atrasado" }
+    { id: 1, nome: "Snoop Lanches", vendas: 0.00, status: "Ativo", url: "https://snooplanche2.netlify.app/" },
+    { id: 2, nome: "Kings Burger", vendas: 0.00, status: "Ativo", url: "https://kingsburger.netlify.app/" }
 ];
 
 function inicializar() {
@@ -65,40 +63,29 @@ function gerarPDF(nome, vendasBrutas) {
     const comissao = vendasBrutas * 0.10;
     const totalFinal = comissao + TAXA_FIXA_MENSAL;
 
-    // Cabeçalho PDF
     doc.setFontSize(22);
-    doc.setTextColor(20, 20, 20);
     doc.text("EXTRATO DE COBRANÇA MENSAL", 20, 25);
     
     doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
+    doc.setTextColor(100);
     doc.text(`Parceiro: ${nome.toUpperCase()}`, 20, 35);
-    doc.text(`Data de Emissão: ${new Date().toLocaleDateString('pt-BR')}`, 20, 40);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 20, 40);
 
-    // Tabela de Itens
     doc.autoTable({
         startY: 50,
-        head: [['Serviço / Descrição', 'Base de Cálculo', 'Subtotal']],
+        head: [['Serviço', 'Base', 'Subtotal']],
         body: [
-            ['Uso de Plataforma (Comissão 10%)', `Vendas: R$ ${vendasBrutas.toFixed(2)}`, `R$ ${comissao.toFixed(2)}`],
-            ['Mensalidade de Manutenção (Fixo)', 'Referente ao Mês Atual', `R$ ${TAXA_FIXA_MENSAL.toFixed(2)}`],
+            ['Uso de Plataforma (10%)', `Vendas: R$ ${vendasBrutas.toFixed(2)}`, `R$ ${comissao.toFixed(2)}`],
+            ['Mensalidade de Manutenção', 'Fixa Mensal', `R$ ${TAXA_FIXA_MENSAL.toFixed(2)}`],
         ],
-        theme: 'striped',
-        headStyles: { fillColor: [230, 126, 34] } // Cor primária (Laranja)
+        headStyles: { fillColor: [230, 126, 34] }
     });
 
-    // Rodapé de Total
     const finalY = doc.lastAutoTable.finalY + 15;
     doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(0);
     doc.text(`TOTAL A PAGAR: R$ ${totalFinal.toFixed(2)}`, 20, finalY);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(120, 120, 120);
-    doc.text("Pagamento via PIX para liberação de crédito no sistema.", 20, finalY + 12);
-
     doc.save(`extrato_${nome.toLowerCase().replace(/\s/g, '_')}.pdf`);
 }
 
-// Inicia o sistema
 inicializar();
