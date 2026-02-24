@@ -5,108 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SaaS Admin - Gerenciamento de Restaurantes</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap">
-    
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-
-    <style>
-        :root {
-            --primary: #e67e22;
-            --dark: #111;
-            --bg: #f0f2f5;
-            --white: #ffffff;
-            --success: #28a745;
-            --danger: #dc3545;
-            --warning: #e67e22;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: var(--bg); color: #333; padding: 20px; }
-
-        .container { max-width: 1200px; margin: 0 auto; }
-
-        /* Header Estilizado */
-        .header-admin {
-            background: var(--dark);
-            color: white;
-            padding: 30px;
-            border-radius: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .header-info h1 { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .header-info p { font-size: 0.85rem; opacity: 0.7; }
-
-        /* Cards de Resumo Geral */
-        .grid-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .card-stat {
-            background: var(--white);
-            padding: 25px;
-            border-radius: 18px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            border-left: 5px solid var(--primary);
-        }
-
-        .card-stat h4 { font-size: 0.8rem; color: #777; text-transform: uppercase; margin-bottom: 5px; }
-        .card-stat p { font-size: 1.6rem; font-weight: 800; color: var(--dark); }
-
-        /* Tabela de Restaurantes */
-        .main-table {
-            background: var(--white);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-
-        .table-header {
-            padding: 20px 30px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #fcfcfc; padding: 18px 25px; text-align: left; font-size: 0.85rem; color: #999; text-transform: uppercase; }
-        td { padding: 18px 25px; border-bottom: 1px solid #f1f1f1; font-size: 0.95rem; vertical-align: middle; }
-
-        /* Badges de Status */
-        .badge {
-            padding: 6px 12px;
-            border-radius: 50px;
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: white;
-        }
-
-        /* Botões de Ação */
-        .btn-action {
-            padding: 8px 15px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            background: white;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.8rem;
-            transition: 0.3s;
-        }
-
-        .btn-action:hover { background: var(--dark); color: white; border-color: var(--dark); }
-
-        .btn-bloquear { color: var(--danger); border-color: var(--danger); margin-left: 5px; }
-        .btn-bloquear:hover { background: var(--danger); }
-    </style>
 </head>
 <body>
 
@@ -127,7 +28,7 @@
             <p id="total-comissoes">R$ 0,00</p>
         </div>
         <div class="card-stat" style="border-left-color: var(--success);">
-            <h4>Faturamento SaaS (Fixos)</h4>
+            <h4>Mensalidades Fixas (SaaS)</h4>
             <p id="total-fixo">R$ 0,00</p>
         </div>
         <div class="card-stat" style="border-left-color: var(--dark);">
@@ -145,107 +46,18 @@
                 <tr>
                     <th>Restaurante</th>
                     <th>Vendas Brutas</th>
-                    <th>Sua Parte (10%)</th>
-                    <th>Assinatura</th>
+                    <th>Comissão (10%)</th>
+                    <th>Mensalidade</th>
                     <th>Total Devido</th>
                     <th>Status</th>
                     <th>Ações</th>
                 </tr>
             </thead>
-            <tbody id="tabela-clientes">
-                </tbody>
+            <tbody id="tabela-clientes"></tbody>
         </table>
     </div>
 </div>
 
-<script>
-    const TAXA_FIXA = 59.90;
-
-    // Dados fictícios para simular seu banco de dados
-    const parceiros = [
-        { id: 1, nome: "Snoop Lanches", vendas: 4500.00, status: "Ativo" },
-        { id: 2, nome: "Pizzaria do Bairro", vendas: 2800.00, status: "Pendente" },
-        { id: 3, nome: "Burguer King Local", vendas: 7200.00, status: "Ativo" },
-        { id: 4, nome: "Açaí do Porto", vendas: 950.00, status: "Atrasado" }
-    ];
-
-    function inicializar() {
-        document.getElementById('data-atual').innerText = new Date().toLocaleDateString('pt-BR');
-        renderizarTabela();
-    }
-
-    function renderizarTabela() {
-        const corpo = document.getElementById('tabela-clientes');
-        let somaComissoes = 0;
-        let somaFixo = 0;
-
-        corpo.innerHTML = parceiros.map(res => {
-            const comissao = res.vendas * 0.10;
-            const totalCobranca = comissao + TAXA_FIXA;
-            somaComissoes += comissao;
-            somaFixo += TAXA_FIXA;
-
-            let corBadge = "var(--success)";
-            if(res.status === "Pendente") corBadge = "var(--warning)";
-            if(res.status === "Atrasado") corBadge = "var(--danger)";
-
-            return `
-                <tr>
-                    <td><strong>${res.nome}</strong></td>
-                    <td>R$ ${res.vendas.toFixed(2)}</td>
-                    <td style="color: var(--warning); font-weight: 600;">R$ ${comissao.toFixed(2)}</td>
-                    <td>R$ ${TAXA_FIXA.toFixed(2)}</td>
-                    <td style="font-weight: 800;">R$ ${totalCobranca.toFixed(2)}</td>
-                    <td><span class="badge" style="background: ${corBadge}">${res.status}</span></td>
-                    <td>
-                        <button class="btn-action" onclick="gerarPDF('${res.nome}', ${res.vendas})">📄 PDF</button>
-                        <button class="btn-action btn-bloquear" onclick="alert('Restaurante Bloqueado!')">🚫</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-
-        document.getElementById('total-comissoes').innerText = `R$ ${somaComissoes.toFixed(2)}`;
-        document.getElementById('total-fixo').innerText = `R$ ${somaFixo.toFixed(2)}`;
-        document.getElementById('total-geral').innerText = `R$ ${(somaComissoes + somaFixo).toFixed(2)}`;
-    }
-
-    function gerarPDF(nome, vendasBrutas) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const comissao = vendasBrutas * 0.10;
-        const totalFinal = comissao + TAXA_FIXA;
-
-        doc.setFontSize(22);
-        doc.text("EXTRATO DE COBRANÇA", 20, 20);
-        
-        doc.setFontSize(12);
-        doc.text(`Restaurante: ${nome}`, 20, 35);
-        doc.text(`Data de Emissão: ${new Date().toLocaleDateString()}`, 20, 42);
-
-        doc.autoTable({
-            startY: 50,
-            head: [['Descrição', 'Valor Base', 'Total'],],
-            body: [
-                ['Vendas Totais Registradas', `R$ ${vendasBrutas.toFixed(2)}`, '--'],
-                ['Comissão sobre Vendas (10%)', '--', `R$ ${comissao.toFixed(2)}`],
-                ['Taxa Fixa de Manutenção', '--', `R$ ${TAXA_FIXA.toFixed(2)}`],
-            ],
-            theme: 'striped'
-        });
-
-        const finalY = doc.lastAutoTable.finalY + 15;
-        doc.setFontSize(16);
-        doc.text(`TOTAL A PAGAR: R$ ${totalFinal.toFixed(2)}`, 20, finalY);
-        
-        doc.setFontSize(10);
-        doc.text("Favor realizar o pagamento via PIX para a chave cadastrada.", 20, finalY + 15);
-
-        doc.save(`extrato_${nome.toLowerCase().replace(' ', '_')}.pdf`);
-    }
-
-    inicializar();
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
