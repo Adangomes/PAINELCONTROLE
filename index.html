@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SaaS Admin - Gerenciamento de Restaurantes</title>
+    <title>SaaS Admin - Gestão de Restaurantes</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap">
     <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -15,7 +19,7 @@
     <header class="header-admin">
         <div class="header-info">
             <h1>Gestão de Parceiros</h1>
-            <p>Controle de faturamento e licenças ativas</p>
+            <p>Conectado ao Firebase: myproject26-10f0e</p>
         </div>
         <div style="text-align: right;">
             <p id="data-atual" style="font-weight: 600;"></p>
@@ -24,22 +28,22 @@
 
     <div class="grid-stats">
         <div class="card-stat">
-            <h4>Total em Comissões (10%)</h4>
+            <h4>Comissões Acumuladas (10%)</h4>
             <p id="total-comissoes">R$ 0,00</p>
         </div>
         <div class="card-stat" style="border-left-color: var(--success);">
-            <h4>Mensalidades Fixas (SaaS)</h4>
+            <h4>Total Mensalidades (R$ 59,90)</h4>
             <p id="total-fixo">R$ 0,00</p>
         </div>
         <div class="card-stat" style="border-left-color: var(--dark);">
-            <h4>Total a Receber</h4>
+            <h4>Total Geral a Receber</h4>
             <p id="total-geral" style="color: var(--success);">R$ 0,00</p>
         </div>
     </div>
 
     <div class="main-table">
         <div class="table-header">
-            <h3 style="font-weight: 800;">Restaurantes Cadastrados</h3>
+            <h3 style="font-weight: 800;">Faturamento em Tempo Real</h3>
         </div>
         <table>
             <thead>
