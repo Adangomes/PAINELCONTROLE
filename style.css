@@ -4,6 +4,7 @@
     --bg: #f4f7f6;
     --white: #ffffff;
     --success: #27ae60;
+    --danger: #e74c3c;
     --text-muted: #888;
 }
 
@@ -26,7 +27,6 @@ body { background: var(--bg); color: #2c3e50; padding: 20px; }
 
 .header-info h1 { font-size: 1.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 .header-info p { font-size: 0.85rem; color: var(--text-muted); }
-.header-date { font-weight: 600; font-size: 0.9rem; opacity: 0.8; }
 
 .grid-stats {
     display: grid;
@@ -46,29 +46,16 @@ body { background: var(--bg); color: #2c3e50; padding: 20px; }
 .card-stat h4 { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
 .card-stat p { font-size: 1.5rem; font-weight: 800; }
 
-.main-table {
-    background: var(--white);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-}
-
+.main-table { background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
 .table-header { padding: 20px 30px; border-bottom: 1px solid #eee; background: #fafafa; }
-.table-header h3 { font-size: 1rem; font-weight: 700; }
 
 table { width: 100%; border-collapse: collapse; }
-th { padding: 15px 25px; text-align: left; font-size: 0.75rem; color: #95a5a6; text-transform: uppercase; background: #fdfdfd; }
+th { padding: 15px 25px; text-align: left; font-size: 0.75rem; color: #95a5a6; text-transform: uppercase; }
 td { padding: 15px 25px; border-bottom: 1px solid #f8f9fa; font-size: 0.9rem; }
 
-.badge {
-    padding: 5px 12px;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    font-weight: 800;
-    color: white;
-    background: var(--success);
-}
+.badge { padding: 5px 12px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; color: white; background: var(--success); }
 
+.btn-group { display: flex; gap: 8px; }
 .btn-action {
     padding: 6px 12px;
     border-radius: 6px;
@@ -80,4 +67,5 @@ td { padding: 15px 25px; border-bottom: 1px solid #f8f9fa; font-size: 0.9rem; }
     transition: 0.2s;
 }
 
-.btn-action:hover { background: var(--dark); color: white; border-color: var(--dark); }
+.btn-action:hover { background: var(--dark); color: white; }
+.btn-clear:hover { background: var(--danger) !important; color: white !important; border-color: var(--danger); }
