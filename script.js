@@ -6,7 +6,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const TAXA_FIXA_MENSAL = 59.90;
+const TAXA_FIXA_MENSAL = 69.90;
 const DIA_VENCIMENTO = 10;
 
 // Lista de parceiros
