@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo | SaaS Delivery</title>
+    <title>Painel Administrativo | Mydi Delivery</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap">
     <link rel="stylesheet" href="style.css">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -32,13 +31,13 @@
             <h4>Comissões (10%)</h4>
             <p id="total-comissoes">R$ 0,00</p>
         </div>
-        <div class="card-stat" style="border-left-color: var(--success);">
+        <div class="card-stat" style="border-left-color: #27ae60;">
             <h4>Mensalidades Fixas</h4>
             <p id="total-fixo">R$ 0,00</p>
         </div>
-        <div class="card-stat" style="border-left-color: var(--primary);">
+        <div class="card-stat" style="border-left-color: #f1c40f;">
             <h4>Total a Receber</h4>
-            <p id="total-geral" style="color: var(--success);">R$ 0,00</p>
+            <p id="total-geral" style="color: #27ae60;">R$ 0,00</p>
         </div>
     </div>
 
