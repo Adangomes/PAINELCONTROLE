@@ -23,10 +23,17 @@ function inicializar() {
 function ouvirPedidosRealtime() {
     parceiros.forEach(p => {
 
-        // FATURAMENTO
+        // FATURAMENTO - Melhorado para não zerar por erro de leitura
         db.ref(`faturamento_acumulado/${p.id}`).on('value', (snapshot) => {
-            const dados = snapshot.val() || { vendas: 0 };
-            p.vendas = parseFloat(dados.vendas || 0);
+            if (snapshot.exists()) {
+                const dados = snapshot.val();
+                // Verifica se o campo 'vendas' existe dentro do objeto
+                p.vendas = parseFloat(dados.vendas || 0);
+                console.log(`Dados recebidos para ${p.id}:`, p.vendas);
+            } else {
+                console.warn(`Atenção: Caminho não encontrado no Firebase para o ID: ${p.id}`);
+                p.vendas = 0; 
+            }
             renderizarTabela();
         });
 
