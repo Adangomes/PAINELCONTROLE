@@ -15,53 +15,62 @@
 </head>
 <body>
 
-<div class="container">
-    <header class="header-admin">
-        <div class="header-info">
-            <h1>Gestão Mydi Delivery</h1>
-            <p>Monitoramento de Vendas e Mensalidades</p>
-        </div>
-        <div class="header-date">
-            <span id="data-atual"></span>
-        </div>
-    </header>
-
-    <div class="grid-stats">
-        <div class="card-stat">
-            <h4>Comissões (10%)</h4>
-            <p id="total-comissoes">R$ 0,00</p>
-        </div>
-        <div class="card-stat" style="border-left-color: #27ae60;">
-            <h4>Mensalidades Fixas</h4>
-            <p id="total-fixo">R$ 0,00</p>
-        </div>
-        <div class="card-stat" style="border-left-color: #f1c40f;">
-            <h4>Total a Receber</h4>
-            <p id="total-geral" style="color: #27ae60;">R$ 0,00</p>
-        </div>
+<div id="login-screen" style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #f4f7f6; font-family: 'Poppins', sans-serif; position: fixed; width: 100%; top: 0; left: 0; z-index: 9999;">
+    <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 320px;">
+        <h2 style="margin-bottom: 10px; color: #333;">Mydi Admin</h2>
+        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Chave de Acesso Restrita</p>
+        <input type="password" id="admin-pass" placeholder="Digite a senha" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; outline: none; text-align: center; font-size: 18px;">
+        <button onclick="verificarAcesso()" style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s;">ENTRAR</button>
     </div>
+</div>
 
-    <div class="main-table">
-        <div class="table-header">
-            <h3>Faturamento em Tempo Real</h3>
+<div id="panel-content" style="display: none;">
+    <div class="container">
+        <header class="header-admin">
+            <div class="header-info">
+                <h1>Gestão Mydi Delivery</h1>
+                <p>Monitoramento de Vendas e Mensalidades</p>
+            </div>
+            <div class="header-date">
+                <span id="data-atual"></span>
+            </div>
+        </header>
+
+        <div class="grid-stats">
+            <div class="card-stat">
+                <h4>Comissões (10%)</h4>
+                <p id="total-comissoes">R$ 0,00</p>
+            </div>
+            <div class="card-stat" style="border-left-color: #27ae60;">
+                <h4>Mensalidades Fixas</h4>
+                <p id="total-fixo">R$ 0,00</p>
+            </div>
+            <div class="card-stat" style="border-left-color: #f1c40f;">
+                <h4>Total a Receber</h4>
+                <p id="total-geral" style="color: #27ae60;">R$ 0,00</p>
+            </div>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Restaurante</th>
-                    <th>Vendas Brutas</th>
-                    <th>Comissão (10%)</th>
-                    <th>Mensalidade</th>
-                    <th>Total Devido</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-clientes"></tbody>
-        </table>
+
+        <div class="main-table">
+            <div class="table-header">
+                <h3>Faturamento em Tempo Real</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Restaurante</th>
+                        <th>Vendas Brutas</th>
+                        <th>Comissão (10%)</th>
+                        <th>Mensalidade</th>
+                        <th>Total Devido</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-clientes"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script src="script.js"></script>
-</body>
-</html>
