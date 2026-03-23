@@ -69,3 +69,16 @@ td { padding: 15px 25px; border-bottom: 1px solid #f8f9fa; font-size: 0.9rem; }
 
 .btn-action:hover { background: var(--dark); color: white; }
 .btn-clear:hover { background: var(--danger) !important; color: white !important; border-color: var(--danger); }
+
+
+/* Para o botão de 'RECEBI' não ficar vermelho no hover, mas sim um verde mais escuro */
+.btn-clear {
+    background: var(--success);
+    color: white;
+    border: none;
+}
+
+.btn-clear:hover {
+    background: #219150 !important; /* Um verde um pouco mais escuro */
+    border-color: #219150 !important;
+}
