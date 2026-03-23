@@ -22,29 +22,47 @@ function inicializar() {
 }
 
 // 1. ESCUTA PEDIDOS E STATUS EM TEMPO REAL
+// 1. ESCUTA O SALDO ACUMULADO (BLINDADO)
 function ouvirPedidosRealtime() {
     parceiros.forEach(p => {
-        // Escuta as vendas da loja
-        db.ref(`pedidos/${p.id}`).on('value', (snapshot) => {
-            let somaVendas = 0;
-            const pedidos = snapshot.val();
-            if (pedidos) {
-                Object.values(pedidos).forEach(pedido => {
-                    somaVendas += parseFloat(pedido.total || 0);
-                });
-            }
-            p.vendas = somaVendas;
+        // Escuta o SALDO ACUMULADO (Este não some sozinho!)
+        db.ref(`faturamento_acumulado/${p.id}`).on('value', (snapshot) => {
+            const dadosAcumulados = snapshot.val() || { vendas: 0 };
+            p.vendas = parseFloat(dadosAcumulados.vendas || 0);
 
-            // Escuta a data do último pagamento para definir se está ATIVO ou PENDENTE
+            // Escuta o status de pagamento
             db.ref(`configuracoes/${p.id}/ultimo_pagamento`).on('value', (dateSnapshot) => {
                 const ultimaData = dateSnapshot.val();
                 p.status = calcularStatus(ultimaData);
-                renderizarTabela(); // Recarrega a UI sempre que algo mudar
+                renderizarTabela(); 
             });
         });
     });
 }
 
+// 2. FUNÇÃO CRÍTICA: EXECUTE ISSO NO SEU APP DE VENDAS OU NO FINAL DO DIA
+// Esta função pega o que está nos pedidos e "blinda" no faturamento_acumulado
+function blindarFaturamento(idLoja) {
+    db.ref(`pedidos/${idLoja}`).once('value', (snapshot) => {
+        const pedidos = snapshot.val();
+        if (pedidos) {
+            let somaNovosPedidos = 0;
+            Object.values(pedidos).forEach(pedido => {
+                somaNovosPedidos += parseFloat(pedido.total || 0);
+            });
+
+            // Adiciona ao que já existe no acumulado
+            db.ref(`faturamento_acumulado/${idLoja}`).transaction((atual) => {
+                if (atual === null) return { vendas: somaNovosPedidos };
+                return { vendas: parseFloat(atual.vendas || 0) + somaNovosPedidos };
+            });
+
+            // AGORA SIM, após blindar o valor, você pode limpar os pedidos de 24h
+            // db.ref(`pedidos/${idLoja}`).remove(); 
+            console.log(`Faturamento de ${idLoja} blindado com sucesso!`);
+        }
+    });
+}
 // 2. LÓGICA DO PULO DO GATO: COR DO STATUS
 function calcularStatus(dataUltimoPagamento) {
     const hoje = new Date();
@@ -110,30 +128,32 @@ function darBaixaPagamento(idLoja, nomeLoja) {
     const agora = new Date().toISOString();
 
     Swal.fire({
-        title: `Confirmar pagamento de ${nomeLoja}?`,
-        text: "Isso zerará as vendas acumuladas e atualizará o status para ATIVO.",
-        icon: 'question',
+        title: `Confirmar recebimento de ${nomeLoja}?`,
+        text: "O saldo acumulado será zerado e o status passará para ATIVO.",
+        icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#27ae60',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sim, recebi tudo!',
+        confirmButtonText: 'Sim, dinheiro na mão!',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Atualiza a data de pagamento no Firebase para o Status ficar Verde
+            // 1. Atualiza data de pagamento
             db.ref(`configuracoes/${idLoja}`).update({
                 ultimo_pagamento: agora
             });
 
-            // Limpa os pedidos para recomeçar o faturamento do zero
-            db.ref(`pedidos/${idLoja}`).remove()
-                .then(() => {
-                    Swal.fire('Pago!', 'O faturamento foi zerado e o status está em dia.', 'success');
-                });
+            // 2. ZERA O ACUMULADO (A comissão de uso volta a zero)
+            db.ref(`faturamento_acumulado/${idLoja}`).set({
+                vendas: 0
+            }).then(() => {
+                Swal.fire('Sucesso!', 'Faturamento zerado para o novo mês.', 'success');
+            });
+            
+            // 3. Opcional: Limpa pedidos residuais se houver
+            db.ref(`pedidos/${idLoja}`).remove();
         }
     });
 }
-
 // 5. GERADOR DE PDF
 function gerarPDF(nome, vendas) {
     const { jsPDF } = window.jspdf;
