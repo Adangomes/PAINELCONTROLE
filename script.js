@@ -3,191 +3,165 @@ const firebaseConfig = {
     apiKey: "AIzaSyCXA1yP1F-riNkzOX5zJs5gsQ82EzsT7Qg", 
     databaseURL: "https://myproject26-10f0e-default-rtdb.firebaseio.com/",
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
-// --- REMOVI O LOGIN AUTOMÁTICO DAQUI PARA ELE SÓ RODAR APÓS A SENHA ---
-
+// 🔐 CONFIG GERAL
 const TAXA_FIXA_MENSAL = 69.90;
 const DIA_VENCIMENTO = 10;
-
-// Lista de parceiros
+// ✅ IDs CORRIGIDOS AQUI
 let parceiros = [
-    { id: 'snoop_lanche', nome: "Snoop Lanches", vendas: 0, status: "ATIVO" },
-    { id: 'kings_burger', nome: "Kings Burger", vendas: 0, status: "ATIVO" }
+    { id: 'snoop_lanches', nome: "Snoop Lanches", vendas: 0, status: "PENDENTE" },
+    { id: 'kings_burger', nome: "Kings Burger", vendas: 0, status: "PENDENTE" }
 ];
-
+// 🚀 INICIALIZAÇÃO
 function inicializar() {
-    const dataDisplay = document.getElementById('data-atual');
-    if(dataDisplay) dataDisplay.innerText = new Date().toLocaleDateString('pt-BR');
+    document.getElementById('data-atual').innerText = 
+        new Date().toLocaleDateString('pt-BR');
     ouvirPedidosRealtime();
 }
-
-// 1. ESCUTA O SALDO ACUMULADO (BLINDADO)
+// 🔴 ESCUTA FIREBASE (CORRIGIDO)
 function ouvirPedidosRealtime() {
     parceiros.forEach(p => {
+
+        // FATURAMENTO
         db.ref(`faturamento_acumulado/${p.id}`).on('value', (snapshot) => {
-            const dadosAcumulados = snapshot.val() || { vendas: 0 };
-            p.vendas = parseFloat(dadosAcumulados.vendas || 0);
-
-            db.ref(`configuracoes/${p.id}/ultimo_pagamento`).on('value', (dateSnapshot) => {
-                const ultimaData = dateSnapshot.val();
-                p.status = calcularStatus(ultimaData);
-                renderizarTabela(); 
-            });
+            const dados = snapshot.val() || { vendas: 0 };
+            p.vendas = parseFloat(dados.vendas || 0);
+            renderizarTabela();
         });
+
+        // STATUS
+        db.ref(`configuracoes/${p.id}/ultimo_pagamento`).on('value', (snap) => {
+            const ultimaData = snap.val();
+            p.status = calcularStatus(ultimaData);
+            renderizarTabela();
+        });
+
     });
 }
 
-// 2. FUNÇÃO PARA BLINDAR FATURAMENTO
-function blindarFaturamento(idLoja) {
-    db.ref(`pedidos/${idLoja}`).once('value', (snapshot) => {
-        const pedidos = snapshot.val();
-        if (pedidos) {
-            let somaNovosPedidos = 0;
-            Object.values(pedidos).forEach(pedido => {
-                somaNovosPedidos += parseFloat(pedido.total || 0);
-            });
-
-            db.ref(`faturamento_acumulado/${idLoja}`).transaction((atual) => {
-                if (atual === null) return { vendas: somaNovosPedidos };
-                return { vendas: parseFloat(atual.vendas || 0) + somaNovosPedidos };
-            });
-        }
-    });
-}
-
-// 3. LÓGICA DO STATUS
+// 🧠 STATUS
 function calcularStatus(dataUltimoPagamento) {
     const hoje = new Date();
     const diaAtual = hoje.getDate();
-    
+
     if (!dataUltimoPagamento) return "PENDENTE";
 
     const dataPagto = new Date(dataUltimoPagamento);
-    const mesesDiferenca = (hoje.getFullYear() - dataPagto.getFullYear()) * 12 + (hoje.getMonth() - dataPagto.getMonth());
 
-    if (mesesDiferenca >= 1 && diaAtual > DIA_VENCIMENTO) {
+    const meses = 
+        (hoje.getFullYear() - dataPagto.getFullYear()) * 12 +
+        (hoje.getMonth() - dataPagto.getMonth());
+
+    if (meses >= 1 && diaAtual > DIA_VENCIMENTO) {
         return "PENDENTE";
     }
+
     return "ATIVO";
 }
 
-// 4. RENDERIZAÇÃO DA TABELA
+// 📊 RENDER
 function renderizarTabela() {
     const corpo = document.getElementById('tabela-clientes');
     if (!corpo) return;
 
-    let somaComissoesGeral = 0;
-    let somaMensalidadesGeral = 0;
+    let totalComissao = 0;
+    let totalMensal = 0;
 
     corpo.innerHTML = parceiros.map(res => {
-        const comissao = res.vendas * 0.10;
-        const totalFatura = comissao + TAXA_FIXA_MENSAL;
-        const statusCor = res.status === "ATIVO" ? "#27ae60" : "#e67e22"; 
-        
-        somaComissoesGeral += comissao;
-        somaMensalidadesGeral += TAXA_FIXA_MENSAL;
+
+        const vendas = res.vendas || 0;
+        const comissao = vendas * 0.10;
+        const total = comissao + TAXA_FIXA_MENSAL;
+
+        totalComissao += comissao;
+        totalMensal += TAXA_FIXA_MENSAL;
+
+        const cor = res.status === "ATIVO" ? "#27ae60" : "#e67e22";
 
         return `
-            <tr>
-                <td><strong>${res.nome}</strong></td>
-                <td>R$ ${res.vendas.toFixed(2)}</td>
-                <td style="color: var(--primary); font-weight: 600;">R$ ${comissao.toFixed(2)}</td>
-                <td>R$ ${TAXA_FIXA_MENSAL.toFixed(2)}</td>
-                <td style="font-weight: 800; color: #2ecc71;">R$ ${totalFatura.toFixed(2)}</td>
-                <td><span class="badge" style="background: ${statusCor}">${res.status}</span></td>
-                <td>
-                    <div class="btn-group">
-                        <button class="btn-action" onclick="gerarPDF('${res.nome}', ${res.vendas})">📄 PDF</button>
-                        <button class="btn-action btn-clear" onclick="darBaixaPagamento('${res.id}', '${res.nome}')">✅ RECEBI</button>
-                    </div>
-                </td>
-            </tr>
+        <tr>
+            <td><strong>${res.nome}</strong></td>
+            <td>R$ ${vendas.toFixed(2)}</td>
+            <td style="color:#27ae60">R$ ${comissao.toFixed(2)}</td>
+            <td>R$ ${TAXA_FIXA_MENSAL.toFixed(2)}</td>
+            <td style="font-weight:800;color:#2ecc71">R$ ${total.toFixed(2)}</td>
+            <td><span style="background:${cor};padding:5px 10px;border-radius:6px;color:#fff">${res.status}</span></td>
+            <td>
+                <button onclick="gerarPDF('${res.nome}', ${vendas})">PDF</button>
+                <button onclick="darBaixaPagamento('${res.id}')">RECEBI</button>
+            </td>
+        </tr>
         `;
     }).join('');
 
-    document.getElementById('total-comissoes').innerText = `R$ ${somaComissoesGeral.toFixed(2)}`;
-    document.getElementById('total-fixo').innerText = `R$ ${somaMensalidadesGeral.toFixed(2)}`;
-    document.getElementById('total-geral').innerText = `R$ ${(somaComissoesGeral + somaMensalidadesGeral).toFixed(2)}`;
+    document.getElementById('total-comissoes').innerText = `R$ ${totalComissao.toFixed(2)}`;
+    document.getElementById('total-fixo').innerText = `R$ ${totalMensal.toFixed(2)}`;
+    document.getElementById('total-geral').innerText = `R$ ${(totalComissao + totalMensal).toFixed(2)}`;
 }
 
-// 5. FUNÇÃO PARA DAR BAIXA
-function darBaixaPagamento(idLoja, nomeLoja) {
+// 💰 DAR BAIXA
+function darBaixaPagamento(idLoja) {
     const agora = new Date().toISOString();
 
-    Swal.fire({
-        title: `Confirmar recebimento?`,
-        text: `O saldo de ${nomeLoja} será zerado.`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#27ae60',
-        confirmButtonText: 'Sim!',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            db.ref(`configuracoes/${idLoja}`).update({ ultimo_pagamento: agora });
-            db.ref(`faturamento_acumulado/${idLoja}`).set({ vendas: 0 }).then(() => {
-                Swal.fire('Sucesso!', 'Pagamento registrado.', 'success');
-            });
-            db.ref(`pedidos/${idLoja}`).remove();
-        }
+    db.ref(`configuracoes/${idLoja}`).update({
+        ultimo_pagamento: agora
     });
+
+    db.ref(`faturamento_acumulado/${idLoja}`).set({
+        vendas: 0
+    });
+
+    db.ref(`pedidos/${idLoja}`).remove();
+
+    alert("Pagamento registrado!");
 }
 
-// 6. GERADOR DE PDF
+// 📄 PDF
 function gerarPDF(nome, vendas) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+
     const comissao = vendas * 0.10;
     const total = comissao + TAXA_FIXA_MENSAL;
 
-    doc.setFontSize(18);
-    doc.text(`Extrato de Faturamento: ${nome}`, 20, 20);
-    
-    doc.autoTable({
-        startY: 30,
-        head: [['Descrição', 'Valor']],
-        body: [
-            ['Vendas Brutas', `R$ ${vendas.toFixed(2)}`],
-            ['Comissão (10%)', `R$ ${comissao.toFixed(2)}`],
-            ['Mensalidade', `R$ ${TAXA_FIXA_MENSAL.toFixed(2)}`],
-            ['TOTAL', `R$ ${total.toFixed(2)}`]
-        ],
-        theme: 'grid'
-    });
+    doc.text(`Relatório - ${nome}`, 20, 20);
 
-    doc.save(`fatura-${nome.toLowerCase()}.pdf`);
+    doc.text(`Vendas: R$ ${vendas.toFixed(2)}`, 20, 40);
+    doc.text(`Comissão: R$ ${comissao.toFixed(2)}`, 20, 50);
+    doc.text(`Mensalidade: R$ ${TAXA_FIXA_MENSAL}`, 20, 60);
+    doc.text(`Total: R$ ${total.toFixed(2)}`, 20, 70);
+
+    doc.save("relatorio.pdf");
 }
 
-// --- SISTEMA DE LOGIN NO FINAL ---
-const SENHA_MESTRA = "ADAN@26MYDI"; 
+// 🔐 LOGIN
+const SENHA_MESTRA = "ADAN@26MYDI";
 
 function verificarAcesso() {
-    const campoSenha = document.getElementById('admin-pass');
-    
-    if (campoSenha.value === SENHA_MESTRA) {
+    const senha = document.getElementById('admin-pass').value;
+
+    if (senha === SENHA_MESTRA) {
+
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('panel-content').style.display = 'block';
-        
-        // Só faz o login no Firebase aqui
-        firebase.auth().signInAnonymously().then(() => {
-            console.log("Mydi Autenticado e Liberado! ✅");
-            inicializar(); 
-        }).catch(err => {
-            console.error("Erro no Firebase:", err);
-            Swal.fire('Erro', 'Falha na conexão com o banco.', 'error');
+
+        firebase.auth().signInAnonymously()
+        .then(() => {
+            console.log("Logado Firebase ✅");
+            inicializar();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Erro Firebase");
         });
 
     } else {
-        Swal.fire('Acesso Negado', 'Senha incorreta!', 'error');
-        campoSenha.value = "";
+        alert("Senha incorreta");
     }
 }
 
+// ENTER
 document.addEventListener('keypress', (e) => {
-    if(e.key === 'Enter' && document.getElementById('admin-pass')) {
-        verificarAcesso();
-    }
+    if (e.key === 'Enter') verificarAcesso();
 });
