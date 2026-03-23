@@ -168,3 +168,34 @@ function gerarPDF(nome, vendas) {
 
     doc.save(`fatura-${nome.toLowerCase().replace(" ", "-")}.pdf`);
 }
+
+
+// --- SISTEMA DE LOGIN MYDI ---
+const SENHA_MESTRA = "ADAN@26MYDI"; // COLOQUE SUA SENHA AQUI
+
+function verificarAcesso() {
+    const campoSenha = document.getElementById('admin-pass');
+    
+    if (campoSenha.value === SENHA_MESTRA) {
+        // Libera a tela
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('panel-content').style.display = 'block';
+        
+        // Dispara o login do Firebase e carrega os dados
+        firebase.auth().signInAnonymously().then(() => {
+            console.log("Mydi Autenticado e Liberado! ✅");
+            inicializar(); // Só carrega os dados do banco após a senha
+        });
+
+    } else {
+        Swal.fire('Acesso Negado', 'Senha incorreta!', 'error');
+        campoSenha.value = "";
+    }
+}
+
+// Atalho: aperta Enter para logar
+document.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter' && document.getElementById('admin-pass')) {
+        verificarAcesso();
+    }
+});
