@@ -1,4 +1,4 @@
-// CONFIGURAÇÃO DO FIREBASE COM CHAVE DE ACESSO (Obrigatório para o Auth)
+// 1. CONFIGURAÇÃO DO FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyCXA1yP1F-riNkzOX5zJs5gsQ82EzsT7Qg", 
     databaseURL: "https://myproject26-10f0e-default-rtdb.firebaseio.com/",
@@ -7,14 +7,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- INÍCIO DO LOGIN SEGURO (O que libera os dados) ---
-firebase.auth().signInAnonymously().then(() => {
-    console.log("Mydi Autenticado! ✅");
-    inicializar(); 
-}).catch(err => {
-    console.error("Erro ao logar:", err);
-});
-// --- FIM DO LOGIN SEGURO ---
+// --- REMOVI O LOGIN AUTOMÁTICO DAQUI PARA ELE SÓ RODAR APÓS A SENHA ---
 
 const TAXA_FIXA_MENSAL = 69.90;
 const DIA_VENCIMENTO = 10;
@@ -61,7 +54,6 @@ function blindarFaturamento(idLoja) {
                 if (atual === null) return { vendas: somaNovosPedidos };
                 return { vendas: parseFloat(atual.vendas || 0) + somaNovosPedidos };
             });
-            console.log(`Faturamento de ${idLoja} blindado com sucesso!`);
         }
     });
 }
@@ -126,18 +118,18 @@ function darBaixaPagamento(idLoja, nomeLoja) {
     const agora = new Date().toISOString();
 
     Swal.fire({
-        title: `Confirmar recebimento de ${nomeLoja}?`,
-        text: "O saldo acumulado será zerado e o status passará para ATIVO.",
+        title: `Confirmar recebimento?`,
+        text: `O saldo de ${nomeLoja} será zerado.`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#27ae60',
-        confirmButtonText: 'Sim, dinheiro na mão!',
+        confirmButtonText: 'Sim!',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
             db.ref(`configuracoes/${idLoja}`).update({ ultimo_pagamento: agora });
             db.ref(`faturamento_acumulado/${idLoja}`).set({ vendas: 0 }).then(() => {
-                Swal.fire('Sucesso!', 'Faturamento zerado para o novo mês.', 'success');
+                Swal.fire('Sucesso!', 'Pagamento registrado.', 'success');
             });
             db.ref(`pedidos/${idLoja}`).remove();
         }
@@ -158,33 +150,34 @@ function gerarPDF(nome, vendas) {
         startY: 30,
         head: [['Descrição', 'Valor']],
         body: [
-            ['Vendas Brutas Acumuladas', `R$ ${vendas.toFixed(2)}`],
-            ['Comissão de Uso (10%)', `R$ ${comissao.toFixed(2)}`],
-            ['Mensalidade do Sistema', `R$ ${TAXA_FIXA_MENSAL.toFixed(2)}`],
-            ['TOTAL A PAGAR', `R$ ${total.toFixed(2)}`]
+            ['Vendas Brutas', `R$ ${vendas.toFixed(2)}`],
+            ['Comissão (10%)', `R$ ${comissao.toFixed(2)}`],
+            ['Mensalidade', `R$ ${TAXA_FIXA_MENSAL.toFixed(2)}`],
+            ['TOTAL', `R$ ${total.toFixed(2)}`]
         ],
         theme: 'grid'
     });
 
-    doc.save(`fatura-${nome.toLowerCase().replace(" ", "-")}.pdf`);
+    doc.save(`fatura-${nome.toLowerCase()}.pdf`);
 }
 
-
-// --- SISTEMA DE LOGIN MYDI ---
-const SENHA_MESTRA = "ADAN@26MYDI"; // COLOQUE SUA SENHA AQUI
+// --- SISTEMA DE LOGIN NO FINAL ---
+const SENHA_MESTRA = "ADAN@26MYDI"; 
 
 function verificarAcesso() {
     const campoSenha = document.getElementById('admin-pass');
     
     if (campoSenha.value === SENHA_MESTRA) {
-        // Libera a tela
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('panel-content').style.display = 'block';
         
-        // Dispara o login do Firebase e carrega os dados
+        // Só faz o login no Firebase aqui
         firebase.auth().signInAnonymously().then(() => {
             console.log("Mydi Autenticado e Liberado! ✅");
-            inicializar(); // Só carrega os dados do banco após a senha
+            inicializar(); 
+        }).catch(err => {
+            console.error("Erro no Firebase:", err);
+            Swal.fire('Erro', 'Falha na conexão com o banco.', 'error');
         });
 
     } else {
@@ -193,7 +186,6 @@ function verificarAcesso() {
     }
 }
 
-// Atalho: aperta Enter para logar
 document.addEventListener('keypress', (e) => {
     if(e.key === 'Enter' && document.getElementById('admin-pass')) {
         verificarAcesso();
