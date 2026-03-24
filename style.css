@@ -72,13 +72,14 @@ td { padding: 15px 25px; border-bottom: 1px solid #f8f9fa; font-size: 0.9rem; }
 
 
 /* Para o botão de 'RECEBI' não ficar vermelho no hover, mas sim um verde mais escuro */
+/* No seu style.css, garanta que esteja assim: */
 .btn-clear {
-    background: var(--success);
-    color: white;
-    border: none;
+    background-color: var(--success) !important;
+    color: white !important;
+    border: none !important;
 }
 
 .btn-clear:hover {
-    background: #219150 !important; /* Um verde um pouco mais escuro */
+    background-color: #219150 !important; /* Verde escuro no hover */
     border-color: #219150 !important;
 }
