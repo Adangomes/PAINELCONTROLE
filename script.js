@@ -94,10 +94,12 @@ function renderizarTabela() {
             <td>R$ ${TAXA_FIXA_MENSAL.toFixed(2)}</td>
             <td style="font-weight:800;color:#2ecc71">R$ ${total.toFixed(2)}</td>
             <td><span style="background:${cor};padding:5px 10px;border-radius:6px;color:#fff">${res.status}</span></td>
-            <td>
-                <button onclick="gerarPDF('${res.nome}', ${vendas})">PDF</button>
-                <button onclick="darBaixaPagamento('${res.id}')">RECEBI</button>
-            </td>
+        <td>
+            <div class="btn-group">
+                <button class="btn-action" onclick="gerarPDF('${res.nome}', ${vendas})">PDF</button>
+                <button class="btn-action btn-clear" onclick="darBaixaPagamento('${res.id}')">RECEBI</button>
+            </div>
+        </td>
         </tr>
         `;
     }).join('');
